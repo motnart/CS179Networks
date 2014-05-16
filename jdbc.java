@@ -12,6 +12,7 @@ private Connection _connection = null;
    static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
 static final String DB_URL = "jdbc:mysql://localhost/master";
 
+
    //  Database credentials
    //static final String USER = "username";
    //static final String PASS = "password";
@@ -108,20 +109,30 @@ public String getaccess (String query) throws SQLException {
       return access;
    }
    
-   public static void main(String[] args) {
+   public static void main(String[] args) throws Exception{
    jdbc conn = null;
  String userID=null;
 String password=null;
 boolean success=false;
 String access=null;
+
+ServerSocket welcomeSocket = new ServerSocket(46801);
+System.out.println("Listening...");
+Socket connectionSocket = welcomeSocket.accept();
+System.out.println("Client Connected!");
 BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
 
 
 try{
-    System.out.print("User ID: ");
-    userID = input.readLine();
-    System.out.print("Password: ");
-    password = input.readLine();
+//System.out.print("User ID: ");
+    userID = inFromClient.readLine();
+//System.out.print(userID);
+
+    //System.out.print("Password: ");
+    password = inFromClient.readLine();
+//System.out.print(password);
 }
 catch(IOException ioe)
 {
@@ -143,12 +154,12 @@ System.out.println("An unexpected error occured.");
       String sql = "SELECT UserID,access FROM Users WHERE UserID='"+userID+"' AND password='"+password+"';";
       success = conn.authenticate(sql);
       if(!success)
-      System.out.println ("Credentials Do Not Match!");
+      outToClient.write(0);
       else
 {
-      System.out.println ("Successfully Authenticated!");
+      outToClient.write(1);
 access=conn.getaccess(sql);
-System.out.println(access);
+//System.out.println(access);
 sql = "SELECT DoorID FROM GenDoors WHERE access="+access+" UNION ALL SELECT DoorID FROM SpecDoors WHERE UserID='"+userID+"';";
 conn.printQuery(sql);
 
