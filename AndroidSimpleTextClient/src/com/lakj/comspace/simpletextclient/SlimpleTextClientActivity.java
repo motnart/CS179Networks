@@ -56,11 +56,11 @@ public class SlimpleTextClientActivity extends Activity {
 
 				client = new Socket("169.235.31.177", 46801); // connect to the server
 				printwriter = new PrintWriter(client.getOutputStream(), true);
-				printwriter.write(messsage); // write the message to output stream
+				printwriter.write(messsage+'\n'); // write the message to output stream
 
 				printwriter.flush();
 				printwriter.close();
-				client.close(); // closing the connection
+				//client.close(); // closing the connection
 
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
