@@ -86,6 +86,20 @@ public void executeUpdate (String sql) throws SQLException {
       stmt.close ();
    }
 
+  public int getrowcount (String query) throws SQLException {
+int count=0;
+      // creates a statement object
+      Statement stmt = this._connection.createStatement ();
+
+      // issues the query instruction
+      ResultSet rs = stmt.executeQuery (query);
+
+      while (rs.next()){
+  count = rs.getInt(1);
+  }
+return count;
+   }
+
  public boolean authenticate (String query) throws SQLException {
       // creates a statement object
       Statement stmt = this._connection.createStatement ();
@@ -119,7 +133,9 @@ String access=null;
 ServerSocket welcomeSocket = new ServerSocket(46801);
 System.out.println("Listening...");
 Socket connectionSocket = welcomeSocket.accept();
+System.out.println(connectionSocket.getRemoteSocketAddress());
 System.out.println("Client Connected!");
+
 BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
 BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
@@ -131,7 +147,7 @@ try{
 //System.out.print(userID);
 
     //System.out.print("Password: ");
-    password = inFromClient.readLine();
+password = inFromClient.readLine();
 //System.out.print(password);
 }
 catch(IOException ioe)
@@ -161,7 +177,10 @@ System.out.println("An unexpected error occured.");
 access=conn.getaccess(sql);
 //System.out.println(access);
 sql = "SELECT DoorID FROM GenDoors WHERE access="+access+" UNION ALL SELECT DoorID FROM SpecDoors WHERE UserID='"+userID+"';";
+String rows="SELECT COUNT(*) FROM (SELECT DoorID FROM GenDoors WHERE access="+access+" UNION ALL SELECT DoorID FROM SpecDoors WHERE UserID='"+userID+"') as t1;";
 conn.printQuery(sql);
+int count=conn.getrowcount(rows);
+System.out.println(count);
 
 }
       }catch(Exception e) {
