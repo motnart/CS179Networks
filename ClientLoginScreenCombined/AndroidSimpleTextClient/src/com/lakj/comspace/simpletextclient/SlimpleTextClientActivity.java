@@ -31,7 +31,8 @@ public class SlimpleTextClientActivity extends Activity {
 	private EditText Username = null;
 	private EditText Password = null;
 	private Button button;
-	private String messsage;
+	private String userMessage;
+	private String passMessage;
 	private TextView attempts;
 	int counter = 3;
 
@@ -51,11 +52,10 @@ public class SlimpleTextClientActivity extends Activity {
 		button.setOnClickListener(new View.OnClickListener() {
 
 			public void onClick(View v) {
-				messsage = "User: ";
-				messsage = Username.getText().toString(); // get the text message on the text field
-				messsage = messsage + " Pass: ";
-				messsage = messsage + Password.getText().toString(); // append password
-				Username.setText(""); // Reset the text field to blank
+				userMessage = Username.getText().toString() + '\n'; // get the text in username
+				passMessage = Password.getText().toString() + '\n'; // get the text in password
+				Username.setText(""); // Reset Username field
+				Password.setText(""); // Reset Password field
 				SendMessage sendMessageTask = new SendMessage();
 				sendMessageTask.execute();
 				
@@ -77,25 +77,6 @@ public class SlimpleTextClientActivity extends Activity {
 			}
 		});
 	}
-
-	/*public void login(View view){
-        if(Username.getText().toString().equals("admin") &&
-                Password.getText().toString().equals("admin")){
-            Toast.makeText(getApplicationContext(), "Redirecting...",
-                    Toast.LENGTH_SHORT).show();
-        }
-        else{
-            Toast.makeText(getApplicationContext(), "Wrong Credentials",
-                    Toast.LENGTH_SHORT).show();
-            attempts.setBackgroundColor(Color.RED);
-            counter--;
-            attempts.setText(Integer.toString(counter));
-            if(counter==0){
-                button.setEnabled(false);
-            }
-
-        }
-	}*/
 	
 	private class SendMessage extends AsyncTask<Void, Void, Void> {
 
@@ -105,7 +86,8 @@ public class SlimpleTextClientActivity extends Activity {
 
 				client = new Socket("169.235.31.177", 46801); // connect to the server
 				printwriter = new PrintWriter(client.getOutputStream(), true);
-				printwriter.write(messsage); // write the message to output stream
+				printwriter.write(userMessage); // write username to output stream
+				printwriter.write(passMessage); // write password to output stream
 
 				printwriter.flush();
 				printwriter.close();
