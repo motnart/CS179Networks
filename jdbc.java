@@ -130,25 +130,29 @@ String password=null;
 boolean success=false;
 String access=null;
 
-ServerSocket welcomeSocket = new ServerSocket(46801);
+ServerSocket readSocket = new ServerSocket(46801);
+ServerSocket writeSocket = new ServerSocket(43849);
 System.out.println("Listening...");
-Socket connectionSocket = welcomeSocket.accept();
-System.out.println(connectionSocket.getRemoteSocketAddress());
+Socket readSock = readSocket.accept();
+System.out.println(readSock.getRemoteSocketAddress());
+System.out.println("Client Connected!");
+Socket writeSock = writeSocket.accept();
+System.out.println(writeSock.getRemoteSocketAddress());
 System.out.println("Client Connected!");
 
 BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
-BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
+BufferedReader inFromClient = new BufferedReader(new InputStreamReader(readSock.getInputStream()));
+BufferedWriter outToClient = new BufferedWriter(new OutputStreamWriter(writeSock.getOutputStream()));
 
 
 try{
 //System.out.print("User ID: ");
     userID = inFromClient.readLine();
-//System.out.print(userID);
+System.out.print(userID);
 
     //System.out.print("Password: ");
 password = inFromClient.readLine();
-//System.out.print(password);
+System.out.print(password);
 }
 catch(IOException ioe)
 {
@@ -169,11 +173,16 @@ System.out.println("An unexpected error occured.");
       
       String sql = "SELECT UserID,access FROM Users WHERE UserID='"+userID+"' AND password='"+password+"';";
       success = conn.authenticate(sql);
-      if(!success)
-      outToClient.write(0);
+      if(!success){
+      outToClient.write("0\n");
+outToClient.flush();
+//outToClient.close();
+}
       else
 {
-      outToClient.write(1);
+      outToClient.write("1\n");
+outToClient.flush();
+//outToClient.close();
 access=conn.getaccess(sql);
 //System.out.println(access);
 sql = "SELECT DoorID FROM GenDoors WHERE access="+access+" UNION ALL SELECT DoorID FROM SpecDoors WHERE UserID='"+userID+"';";
@@ -181,6 +190,8 @@ String rows="SELECT COUNT(*) FROM (SELECT DoorID FROM GenDoors WHERE access="+ac
 conn.printQuery(sql);
 int count=conn.getrowcount(rows);
 System.out.println(count);
+//sql = "UPDATE Users SET loggedin=1 WHERE UserID='" + userID + "';"; 
+//conn.executeUpdate(sql);
 
 }
       }catch(Exception e) {
