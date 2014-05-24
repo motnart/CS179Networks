@@ -1,7 +1,9 @@
 package com.lakj.comspace.simpletextclient;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
+//import java.io.IOException;
+//import java.io.PrintWriter;
+//import java.io.BufferedReader;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -26,13 +28,16 @@ import android.widget.Toast;
 public class SlimpleTextClientActivity extends Activity {
 
 	private static long back_pressed;
-	private Socket client;
+	private Socket clientsend;
+	private Socket clientrec;
 	private PrintWriter printwriter;
+	private BufferedReader buffread;
 	private EditText Username = null;
 	private EditText Password = null;
 	private Button button;
 	private String userMessage;
 	private String passMessage;
+	public String received;
 	private TextView attempts;
 	int counter = 3;
 
@@ -41,9 +46,7 @@ public class SlimpleTextClientActivity extends Activity {
 		super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_slimple_text_client);
         Username = (EditText)findViewById(R.id.editText1);
-        //Username.setText("Username");
         Password = (EditText)findViewById(R.id.editText2);
-        //Password.setText("Password");
         attempts = (TextView)findViewById(R.id.textView5);
         attempts.setText(Integer.toString(counter));
         button = (Button)findViewById(R.id.button1);
@@ -58,6 +61,13 @@ public class SlimpleTextClientActivity extends Activity {
 				Password.setText(""); // Reset Password field
 				SendMessage sendMessageTask = new SendMessage();
 				sendMessageTask.execute();
+				
+				/*if(received != null) {
+					Username.setText(received);
+				}
+				else {
+					Username.setText("received == null");
+				}*/
 				
 				if(Username.getText().toString().equals("admin") &&
 			               Password.getText().toString().equals("admin")){
@@ -84,14 +94,21 @@ public class SlimpleTextClientActivity extends Activity {
 		protected Void doInBackground(Void... params) {
 			try {
 
-				client = new Socket("169.235.31.177", 46801); // connect to the server
-				printwriter = new PrintWriter(client.getOutputStream(), true);
+				clientsend = new Socket("169.235.31.177", 46801); // connect to the server
+				clientrec = new Socket("169.235.31.177", 43849);
+				
+				printwriter = new PrintWriter(clientsend.getOutputStream(), true);
 				printwriter.write(userMessage); // write username to output stream
 				printwriter.write(passMessage); // write password to output stream
 
 				printwriter.flush();
 				printwriter.close();
-				client.close(); // closing the connection
+				
+				buffread = new BufferedReader(new InputStreamReader(clientrec.getInputStream()));
+				received = buffread.readLine();
+				buffread.close();
+				
+				//client.close(); // closing the connection
 
 			} catch (UnknownHostException e) {
 				e.printStackTrace();

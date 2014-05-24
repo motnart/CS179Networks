@@ -71,7 +71,6 @@
         android:layout_marginTop="94dp"
         android:onClick="login"
         android:text="@string/Login" />
-        />
     
     <TextView
         android:id="@+id/textView4"
@@ -89,7 +88,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignRight="@+id/textView1"
-        android:layout_alignTop="@+id/textView4"
-        android:text="TextView" />
+        android:layout_alignTop="@+id/textView4" />
 
 </RelativeLayout>
