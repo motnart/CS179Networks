@@ -8,14 +8,10 @@ import java.net.*;
 
 public class jdbc {
    // JDBC driver name and database URL
-private Connection _connection = null;
+
+public Connection _connection = null;
    static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
 static final String DB_URL = "jdbc:mysql://localhost/master";
-
-
-   //  Database credentials
-   //static final String USER = "username";
-   //static final String PASS = "password";
 
 public jdbc () throws SQLException {
 
@@ -32,6 +28,58 @@ public jdbc () throws SQLException {
          System.exit(-1);
       }//end catch
    }//end EmbeddedSQL
+   
+   public static void main(String[] args) throws Exception{
+
+ServerSocket readSocket = new ServerSocket(46801);
+ServerSocket writeSocket = new ServerSocket(43849);
+System.out.println("Listening...");
+while(true){
+new ServerThread(readSocket.accept(),writeSocket.accept()).start();
+//Socket readSock = readSocket.accept();
+//System.out.println(readSock.getRemoteSocketAddress());
+//System.out.println("Client Connected!");
+//Socket writeSock = writeSocket.accept();
+//System.out.println(writeSock.getRemoteSocketAddress());
+//System.out.println("Client Connected!");
+}
+}
+}
+
+class ServerThread extends Thread{
+
+
+
+
+   //  Database credentials
+   //static final String USER = "username";
+   //static final String PASS = "password";
+
+
+public static String createMessage () throws Exception
+{
+final int MessageLength = 16;
+
+char [] randomMessage = new char [MessageLength];
+
+for (int i = 0; i < MessageLength; i++)
+{
+double newNum = Math.random() * 92 + 33;
+int castNewNum = (int)newNum;
+char intToAscii = (char) castNewNum;
+//System.out.println(intToAscii);
+randomMessage [i] = intToAscii;
+}
+
+String finalMessage = new String (randomMessage);
+
+return finalMessage;
+
+}
+
+
+
+
 
 public void executeUpdate (String sql) throws SQLException {
       // creates a statement object
@@ -86,7 +134,7 @@ public void executeUpdate (String sql) throws SQLException {
       stmt.close ();
    }
 
-  public int getrowcount (String query) throws SQLException {
+  /*public int getrowcount (String query) throws SQLException {
 int count=0;
       // creates a statement object
       Statement stmt = this._connection.createStatement ();
@@ -98,7 +146,7 @@ int count=0;
   count = rs.getInt(1);
   }
 return count;
-   }
+   }*/
 
  public boolean authenticate (String query) throws SQLException {
       // creates a statement object
@@ -122,50 +170,65 @@ public String getaccess (String query) throws SQLException {
       stmt.close ();
       return access;
    }
-   
-   public static void main(String[] args) throws Exception{
+	private Socket readSock;
+	private Socket writeSock;
+
+ public ServerThread(Socket read, Socket write) {
+        super("ServerThread");
+        this.readSock = read;
+	this.writeSock=write;
+    }
+
    jdbc conn = null;
  String userID=null;
 String password=null;
 boolean success=false;
 String access=null;
+String doorchoice=null;
 
-ServerSocket readSocket = new ServerSocket(46801);
-ServerSocket writeSocket = new ServerSocket(43849);
-System.out.println("Listening...");
-Socket readSock = readSocket.accept();
-System.out.println(readSock.getRemoteSocketAddress());
-System.out.println("Client Connected!");
-Socket writeSock = writeSocket.accept();
-System.out.println(writeSock.getRemoteSocketAddress());
-System.out.println("Client Connected!");
+public void run(){
 
+try(
 BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
 BufferedReader inFromClient = new BufferedReader(new InputStreamReader(readSock.getInputStream()));
-BufferedWriter outToClient = new BufferedWriter(new OutputStreamWriter(writeSock.getOutputStream()));
+PrintWriter outToClient = new PrintWriter(writeSock.getOutputStream(),true);
+){
 
-
-try{
+//outToClient.write("hello\n");
+//outToClient.flush();
+//System.out.println("Sent hello");
 //System.out.print("User ID: ");
     userID = inFromClient.readLine();
-System.out.print(userID);
+System.out.println(userID);
 
     //System.out.print("Password: ");
 password = inFromClient.readLine();
-System.out.print(password);
+System.out.println(password);
 }
 catch(IOException ioe)
 {
 System.out.println("An unexpected error occured.");
-}         
+}
 
+if(userID.substring(0,4).equals("door"))
+{
+System.out.println("door");
+String random = createMessage();
+System.out.println(random);
+outToClient.write(random+'\n');
+outToClient.flush();
+while(true){}
+}
+else
+
+{
    try{
       //STEP 2: Register JDBC driver
       Class.forName("com.mysql.jdbc.Driver");
 
       //STEP 3: Open a connection
 
-      conn = new jdbc();
+      conn = new mysql();
 
       //STEP 4: Execute a query
       //System.out.println("Creating database...");
@@ -183,13 +246,27 @@ outToClient.flush();
       outToClient.write("1\n");
 outToClient.flush();
 //outToClient.close();
+
 access=conn.getaccess(sql);
-//System.out.println(access);
-sql = "SELECT DoorID FROM GenDoors WHERE access="+access+" UNION ALL SELECT DoorID FROM SpecDoors WHERE UserID='"+userID+"';";
-String rows="SELECT COUNT(*) FROM (SELECT DoorID FROM GenDoors WHERE access="+access+" UNION ALL SELECT DoorID FROM SpecDoors WHERE UserID='"+userID+"') as t1;";
-conn.printQuery(sql);
-int count=conn.getrowcount(rows);
-System.out.println(count);
+doorchoice=inFromClient.readLine();
+System.out.println(doorchoice);
+sql = "SELECT * FROM (SELECT DoorID FROM GenDoors WHERE access="+access+" UNION ALL SELECT DoorID FROM SpecDoors WHERE UserID='"+userID+"') as t1 WHERE DoorID="+doorchoice+";";
+//String rows="SELECT COUNT(*) FROM (SELECT DoorID FROM GenDoors WHERE access="+access+" UNION ALL SELECT DoorID FROM SpecDoors WHERE UserID='"+userID+"') as t1;";
+success = conn.authenticate(sql);
+      if(!success){
+      outToClient.write("0\n");
+outToClient.flush();
+//outToClient.close();
+}
+      else
+{
+      outToClient.write("1\n");
+outToClient.flush();
+}
+//outToClient.close();
+//conn.printQuery(sql);
+//int count=conn.getrowcount(rows);
+//System.out.println(count);
 //sql = "UPDATE Users SET loggedin=1 WHERE UserID='" + userID + "';"; 
 //conn.executeUpdate(sql);
 
@@ -207,6 +284,10 @@ System.out.println(count);
          }catch (Exception e) {
             // ignored.
          }//end try
-      }//end try
-}//end main
+      }
+}//end try
+//end main
 }//end JDBCExample
+}
+
+
