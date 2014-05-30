@@ -25,6 +25,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.lakj.comspace.simpletextclient.BlankActivity"
+            android:label="@string/title_activity_blank" >
+        </activity>
+        <activity
+            android:name="com.lakj.comspace.simpletextclient.SecondActivity"
+            android:label="@string/title_activity_second" >
+        </activity>
     </application>
 
 </manifest>
