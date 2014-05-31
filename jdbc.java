@@ -9,7 +9,7 @@ import java.net.*;
 public class jdbc {
    // JDBC driver name and database URL
 
-public Connection _connection = null;
+private Connection _connection = null;
    static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
 static final String DB_URL = "jdbc:mysql://localhost/master";
 
@@ -28,55 +28,6 @@ public jdbc () throws SQLException {
          System.exit(-1);
       }//end catch
    }//end EmbeddedSQL
-   
-   public static void main(String[] args) throws Exception{
-
-ServerSocket readSocket = new ServerSocket(46801);
-ServerSocket writeSocket = new ServerSocket(43849);
-System.out.println("Listening...");
-while(true){
-new ServerThread(readSocket.accept(),writeSocket.accept()).start();
-//Socket readSock = readSocket.accept();
-//System.out.println(readSock.getRemoteSocketAddress());
-//System.out.println("Client Connected!");
-//Socket writeSock = writeSocket.accept();
-//System.out.println(writeSock.getRemoteSocketAddress());
-//System.out.println("Client Connected!");
-}
-}
-}
-
-class ServerThread extends Thread{
-
-
-
-
-   //  Database credentials
-   //static final String USER = "username";
-   //static final String PASS = "password";
-
-
-public static String createMessage () throws Exception
-{
-final int MessageLength = 16;
-
-char [] randomMessage = new char [MessageLength];
-
-for (int i = 0; i < MessageLength; i++)
-{
-double newNum = Math.random() * 92 + 33;
-int castNewNum = (int)newNum;
-char intToAscii = (char) castNewNum;
-//System.out.println(intToAscii);
-randomMessage [i] = intToAscii;
-}
-
-String finalMessage = new String (randomMessage);
-
-return finalMessage;
-
-}
-
 
 
 
@@ -101,7 +52,7 @@ public void executeUpdate (String sql) throws SQLException {
     * @return the number of rows returned
     * @throws java.sql.SQLException when failed to execute the query
     */
-   public void printQuery (String query) throws SQLException {
+public void printQuery (String query) throws SQLException {
       // creates a statement object
       Statement stmt = this._connection.createStatement ();
 
@@ -170,13 +121,61 @@ public String getaccess (String query) throws SQLException {
       stmt.close ();
       return access;
    }
+   
+   public static void main(String[] args) throws Exception{
+
+ServerSocket readSocket = new ServerSocket(46801);
+ServerSocket writeSocket = new ServerSocket(43849);
+System.out.println("Listening...");
+while(true){
+new ServerThread(readSocket.accept(),writeSocket.accept()).start();
+
+}
+}
+}
+
+class ServerThread extends Thread{
+
+ //  Database credentials
+   //static final String USER = "username";
+   //static final String PASS = "password";
+public static String createMessage () throws Exception
+{
+final int MessageLength = 16;
+
+char [] randomMessage = new char [MessageLength];
+
+for (int i = 0; i < MessageLength; i++)
+{
+double newNum = Math.random() * 92 + 33;
+int castNewNum = (int)newNum;
+char intToAscii = (char) castNewNum;
+//System.out.println(intToAscii);
+randomMessage [i] = intToAscii;
+}
+
+String finalMessage = new String (randomMessage);
+
+return finalMessage;
+
+}
+
+
 	private Socket readSock;
 	private Socket writeSock;
 
  public ServerThread(Socket read, Socket write) {
+//Socket readSock = readSocket.accept();
+
+//Socket writeSock = writeSocket.accept();
+
         super("ServerThread");
         this.readSock = read;
 	this.writeSock=write;
+System.out.println(readSock.getRemoteSocketAddress());
+System.out.println("Client Connected!");
+System.out.println(writeSock.getRemoteSocketAddress());
+System.out.println("Client Connected!");
     }
 
    jdbc conn = null;
@@ -186,13 +185,13 @@ boolean success=false;
 String access=null;
 String doorchoice=null;
 
-public void run(){
+public void run() {
 
-try(
+try{
 BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
 BufferedReader inFromClient = new BufferedReader(new InputStreamReader(readSock.getInputStream()));
 PrintWriter outToClient = new PrintWriter(writeSock.getOutputStream(),true);
-){
+//){
 
 //outToClient.write("hello\n");
 //outToClient.flush();
@@ -204,19 +203,19 @@ System.out.println(userID);
     //System.out.print("Password: ");
 password = inFromClient.readLine();
 System.out.println(password);
-}
-catch(IOException ioe)
-{
-System.out.println("An unexpected error occured.");
-}
+
 
 if(userID.substring(0,4).equals("door"))
 {
 System.out.println("door");
+try{
 String random = createMessage();
 System.out.println(random);
 outToClient.write(random+'\n');
 outToClient.flush();
+}catch(Exception e) {
+System.err.println (e.getMessage ());
+}
 while(true){}
 }
 else
@@ -228,7 +227,7 @@ else
 
       //STEP 3: Open a connection
 
-      conn = new mysql();
+      conn = new jdbc();
 
       //STEP 4: Execute a query
       //System.out.println("Creating database...");
@@ -286,7 +285,11 @@ outToClient.flush();
          }//end try
       }
 }//end try
-//end main
+}
+catch(IOException ioe)
+{
+System.out.println("An unexpected error occured.");
+}//end main
 }//end JDBCExample
 }
 
