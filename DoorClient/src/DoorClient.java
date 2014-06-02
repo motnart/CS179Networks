@@ -1,4 +1,7 @@
 import java.io.BufferedReader;
+
+import java.util.Timer;
+
 import java.io.Console;
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +34,6 @@ class QR {
 		createQRCode(qrCodeData, filePath, charset, hintMap, 500, 500);
 		System.out.println("QR Code image created");
 		
-		
 	}
 
 	public static void createQRCode(String qrCodeData, String filePath,
@@ -52,14 +54,16 @@ public class DoorClient {
 	public static BufferedReader buffread;
 	static boolean connected = false;
 
-	public static void main(String[] args) throws UnknownHostException, IOException, WriterException {
+	public static void main(String[] args) throws UnknownHostException, IOException, WriterException, InterruptedException {
 		// TODO Auto-generated method stub
+		
+		Timer timer = new Timer();
 		
 		Socket clientsend = new Socket("169.235.31.177", 46801); // connect to server send
 		Socket clientrec = new Socket("169.235.31.177", 43849); // connect to server rec
 		
-		System.out.println ("Connected to server.");
-		connected = true;
+		System.out.println ("Door is connected to server.");
+		connected = true; 
 		Scanner in = new Scanner (System.in); // takes user input
 		
 		System.out.println ("Username:");
@@ -76,22 +80,33 @@ public class DoorClient {
 		
 		while (connected)
 		{
-			// taking door input
+			// taking door input 
+			// must add timeout
+			
 			buffread = new BufferedReader(new InputStreamReader(clientrec.getInputStream()));
 			String received = buffread.readLine();
-			buffread.close();
+			//buffread.close();
 			
 			// printing the randomly generated message
 			System.out.println (received);
 			
 			//generate QR code
-			QR.QR(received);
-			
-			System.out.println ("GO OPEN QR CODE");
-			
-			
+			if (received != null)
+			{
+				QR.QR(received);
+				System.out.println ("GO OPEN QR CODE");	
+				//Thread.sleep (30000);
+				
+				// set timer for 30 seconds to wait
+				
+				String tempFile = "C:\\Users\\Tom\\workspace\\DoorClient\\QRCode.png";
+				//Delete if tempFile exists
+				File fileTemp = new File(tempFile);
+				if (fileTemp.exists()){
+				    fileTemp.delete();
+				}
+			}
 		}
-
+		buffread.close();
 	}
-
 }
