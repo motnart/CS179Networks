@@ -78,34 +78,78 @@ public class DoorClient {
 		printwriter.flush();
 		printwriter.close();
 		
+		boolean part1 = true;
+		boolean part2 = false;
+		
 		while (connected)
 		{
 			// taking door input 
 			// must add timeout
 			
-			buffread = new BufferedReader(new InputStreamReader(clientrec.getInputStream()));
-			String received = buffread.readLine();
-			//buffread.close();
+			String received = "";
+			String tempFile = "";
 			
-			// printing the randomly generated message
-			System.out.println (received);
-			
-			//generate QR code
-			if (received != null)
+			// check to see if a user connects
+			while (part1)
 			{
-				QR.QR(received);
-				System.out.println ("GO OPEN QR CODE");	
-				//Thread.sleep (30000);
+				buffread = new BufferedReader(new InputStreamReader(clientrec.getInputStream()));
+				received = buffread.readLine();
+				//buffread.close();
 				
-				// set timer for 30 seconds to wait
+				// printing the randomly generated message
+				System.out.println (received);
 				
-				String tempFile = "C:\\Users\\Tom\\workspace\\DoorClient\\QRCode.png";
-				//Delete if tempFile exists
-				File fileTemp = new File(tempFile);
-				if (fileTemp.exists()){
-				    fileTemp.delete();
+				//generate QR code
+				if (received != null)
+				{
+					QR.QR(received);
+					System.out.println ("GO OPEN QR CODE");	
+					
+					tempFile = "C:\\Users\\Tom\\workspace\\DoorClient\\QRCode.png";
+					/*
+					//Delete if tempFile exists
+					File fileTemp = new File(tempFile);
+					if (fileTemp.exists()){
+					    fileTemp.delete();
+					}*/
+					part1 = false;
+					part2 = true;
 				}
 			}
+			
+			while (part2)
+			{
+				//check the signal
+				received = buffread.readLine();
+				//buffread.close();
+				
+				// printing the randomly generated message
+				System.out.println (received);
+				
+				if (received != null)
+				{
+					// SUCCESS
+					if (received.equals("0"))
+					{
+						System.out.println ("Open door");
+					}
+					// FAIL
+					else
+					{
+						System.out.println ("ERROR");
+					}
+					
+					//Delete if tempFile exists
+					File fileTemp = new File(tempFile);
+					if (fileTemp.exists()){
+					    fileTemp.delete();
+					}
+					// reset booleans
+					part1 = true;
+					part2 = false;
+				}
+			}
+			
 		}
 		buffread.close();
 	}
