@@ -12,6 +12,8 @@ public class jdbc {
 private Connection _connection = null;
    static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
 static final String DB_URL = "jdbc:mysql://localhost/master";
+static BufferedReader inFromDoor=null;
+static PrintWriter outToDoor=null;
 
 public jdbc () throws SQLException {
 
@@ -127,7 +129,16 @@ public String getaccess (String query) throws SQLException {
 ServerSocket readSocket = new ServerSocket(46801);
 ServerSocket writeSocket = new ServerSocket(43849);
 System.out.println("Listening...");
+Socket doorRead = readSocket.accept();
+Socket doorWrite = writeSocket.accept();
+System.out.println(doorRead.getRemoteSocketAddress());
+System.out.println("Door Connected!");
+System.out.println(doorWrite.getRemoteSocketAddress());
+System.out.println("Door Connected!");
+inFromDoor = new BufferedReader(new InputStreamReader(doorRead.getInputStream()));
+outToDoor = new PrintWriter(doorWrite.getOutputStream(),true);
 while(true){
+
 new ServerThread(readSocket.accept(),writeSocket.accept()).start();
 
 }
@@ -181,17 +192,25 @@ System.out.println("Client Connected!");
    jdbc conn = null;
  String userID=null;
 String password=null;
-boolean success=false;
 String access=null;
 String doorchoice=null;
 
 public void run() {
+
 
 try{
 BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
 BufferedReader inFromClient = new BufferedReader(new InputStreamReader(readSock.getInputStream()));
 PrintWriter outToClient = new PrintWriter(writeSock.getOutputStream(),true);
 //){
+//try{
+//readSock.setSoTimeout(10000);
+//}catch(Exception e) {
+//System.err.println (e.getMessage ());
+//readSock.close();
+//writeSock.close();
+  //    }
+
 
 //outToClient.write("hello\n");
 //outToClient.flush();
@@ -205,23 +224,23 @@ password = inFromClient.readLine();
 System.out.println(password);
 
 
-if(userID.substring(0,4).equals("door"))
-{
-System.out.println("door");
-try{
-String random = createMessage();
-System.out.println(random);
-outToClient.write(random+'\n');
-outToClient.flush();
-}catch(Exception e) {
-System.err.println (e.getMessage ());
-}
-while(true){}
-}
-else
+//if(userID.substring(0,4).equals("door"))
+//{
+//System.out.println("door");
+//try{
+//String random = createMessage();
+//System.out.println(random);
+//outToClient.write(random+'\n');
+//outToClient.flush();
+//}catch(Exception e) {
+//System.err.println (e.getMessage ());
+//}
+//while(true){}
+//}
+//else
 
-{
-   try{
+//{
+  // try{
       //STEP 2: Register JDBC driver
       Class.forName("com.mysql.jdbc.Driver");
 
@@ -234,10 +253,14 @@ else
       //stmt = conn.createStatement();
       
       String sql = "SELECT UserID,access FROM Users WHERE UserID='"+userID+"' AND password='"+password+"';";
-      success = conn.authenticate(sql);
-      if(!success){
+      String test1;
+      String test2;
+      String test3;
+      if(!conn.authenticate(sql)){
       outToClient.write("0\n");
 outToClient.flush();
+readSock.close();
+writeSock.close();
 //outToClient.close();
 }
       else
@@ -245,22 +268,52 @@ outToClient.flush();
       outToClient.write("1\n");
 outToClient.flush();
 //outToClient.close();
-
+//outToClient.write("123\n");
+//outToClient.flush();
 access=conn.getaccess(sql);
 doorchoice=inFromClient.readLine();
 System.out.println(doorchoice);
-sql = "SELECT * FROM (SELECT DoorID FROM GenDoors WHERE access="+access+" UNION ALL SELECT DoorID FROM SpecDoors WHERE UserID='"+userID+"') as t1 WHERE DoorID="+doorchoice+";";
-//String rows="SELECT COUNT(*) FROM (SELECT DoorID FROM GenDoors WHERE access="+access+" UNION ALL SELECT DoorID FROM SpecDoors WHERE UserID='"+userID+"') as t1;";
-success = conn.authenticate(sql);
-      if(!success){
-      outToClient.write("0\n");
-outToClient.flush();
-//outToClient.close();
-}
-      else
-{
+test1 = "SELECT * FROM Doors WHERE DoorID="+doorchoice+";";
+test2 = "SELECT * FROM (SELECT DoorID FROM GenDoors WHERE access="+access+" UNION ALL SELECT DoorID FROM SpecDoors WHERE UserID='"+userID+"') as t1 WHERE DoorID="+doorchoice+";";
+test3 = "SELECT * FROM Doors WHERE DoorID="+doorchoice+" AND status = 0;";
+if(!conn.authenticate(test1)){
       outToClient.write("1\n");
 outToClient.flush();
+System.out.println("Not a door");
+//outToClient.close();
+}
+else if(!conn.authenticate(test2)){
+      outToClient.write("2\n");
+outToClient.flush();
+System.out.println("You do not have access to this door!");
+//outToClient.close();
+}
+else if(!conn.authenticate(test3)){
+      outToClient.write("3\n");
+outToClient.flush();
+System.out.println("Door is open");
+//outToClient.close();
+}
+else
+{
+      outToClient.write("0\n");
+outToClient.flush();
+System.out.println("Valid");
+String random = createMessage();
+System.out.println(random);
+conn.outToDoor.write(random+'\n');
+conn.outToDoor.flush();
+String QRscan = inFromClient.readLine();
+if(QRscan.equals(random)){
+conn.outToDoor.write("0\n");
+conn.outToDoor.flush();
+}
+else{
+conn.outToDoor.write("1\n");
+conn.outToDoor.flush();
+}
+
+
 }
 //outToClient.close();
 //conn.printQuery(sql);
@@ -270,6 +323,8 @@ outToClient.flush();
 //conn.executeUpdate(sql);
 
 }
+
+
       }catch(Exception e) {
          System.err.println (e.getMessage ());
       }finally{
@@ -279,17 +334,19 @@ outToClient.flush();
                System.out.print("Disconnecting from database...");
                //conn.cleanup ();
                System.out.println("Done\n\nBye !");
+		readSock.close();
+		writeSock.close();
             }//end if
          }catch (Exception e) {
             // ignored.
          }//end try
       }
-}//end try
-}
-catch(IOException ioe)
-{
-System.out.println("An unexpected error occured.");
-}//end main
+//}end try
+//}
+//catch(IOException ioe)
+//{
+//System.out.println("An unexpected error occured.");
+//}//end main
 }//end JDBCExample
 }
 
