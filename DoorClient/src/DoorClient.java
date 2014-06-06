@@ -57,7 +57,7 @@ public class DoorClient {
 	public static void main(String[] args) throws UnknownHostException, IOException, WriterException, InterruptedException {
 		// TODO Auto-generated method stub
 		
-		Timer timer = new Timer();
+		//Timer timer = new Timer();
 		
 		Socket clientsend = new Socket("169.235.31.177", 46801); // connect to server send
 		Socket clientrec = new Socket("169.235.31.177", 43849); // connect to server rec
@@ -90,6 +90,7 @@ public class DoorClient {
 			String tempFile = "";
 			
 			// check to see if a user connects
+			
 			while (part1)
 			{
 				buffread = new BufferedReader(new InputStreamReader(clientrec.getInputStream()));
@@ -106,12 +107,14 @@ public class DoorClient {
 					System.out.println ("GO OPEN QR CODE");	
 					
 					tempFile = "C:\\Users\\Tom\\workspace\\DoorClient\\QRCode.png";
+					//Runtime.getRuntime().exec("cmd.exe /c start build.bat");
 					/*
 					//Delete if tempFile exists
 					File fileTemp = new File(tempFile);
 					if (fileTemp.exists()){
 					    fileTemp.delete();
 					}*/
+		
 					part1 = false;
 					part2 = true;
 				}
