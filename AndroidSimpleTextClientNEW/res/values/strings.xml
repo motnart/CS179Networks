@@ -12,6 +12,6 @@
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_second">SecondActivity</string>
     <string name="scan">Scan</string>
-    <string name="room">room</string>
+    <string name="room">Room</string>
 
 </resources>

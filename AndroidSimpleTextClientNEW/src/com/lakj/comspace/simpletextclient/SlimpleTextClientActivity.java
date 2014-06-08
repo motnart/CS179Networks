@@ -100,13 +100,16 @@ public class SlimpleTextClientActivity extends Activity {
 				received = buffread.readLine();
 				buffread.close();
 				
-				if(received.equals("0")){
+				if(received.equals("0")){ //Success
 			           //Toast.makeText(getApplicationContext(), "Redirecting...",
 			           //        Toast.LENGTH_SHORT).show();
 					   Intent intent = new Intent (SlimpleTextClientActivity.this, SecondActivity.class);
 					   //intent.putExtra("clientsend");
 			           startActivity(intent);
 			    }
+				else if(received.equals("1")){ //Credentials Incorrect
+					
+				}
 			    else{
 			     //Toast.makeText(getApplicationContext(), "Wrong Credentials",
 			     //           Toast.LENGTH_SHORT).show();

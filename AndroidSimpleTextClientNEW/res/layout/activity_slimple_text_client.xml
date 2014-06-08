@@ -50,7 +50,7 @@
         android:text="@string/Password"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
-    <EditText
+   <EditText
         android:id="@+id/editText2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -59,7 +59,6 @@
         android:ems="10"
         android:inputType="textPassword" >
 
-        <requestFocus />
     </EditText>
 
     <TextView
@@ -93,17 +92,18 @@
         android:id="@+id/textView6"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignRight="@+id/textView3"
-        android:layout_centerVertical="true"
+        android:layout_alignLeft="@+id/textView3"
+        android:layout_below="@+id/textView3"
+        android:layout_marginTop="34dp"
         android:text="@string/room"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
-
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    
     <EditText
         android:id="@+id/editText3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/editText2"
-        android:layout_alignTop="@+id/textView6"
+        android:layout_alignBottom="@+id/textView6"
         android:ems="10"/>
 
 </RelativeLayout>
