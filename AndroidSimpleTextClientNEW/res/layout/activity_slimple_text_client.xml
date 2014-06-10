@@ -104,6 +104,7 @@
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/editText2"
         android:layout_alignBottom="@+id/textView6"
-        android:ems="10"/>
+        android:ems="10"
+        android:inputType="number"/>
 
 </RelativeLayout>

@@ -18,6 +18,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.os.Handler;
+import android.os.Message;
 
 /**
  * This is a simple Android mobile client
@@ -44,6 +46,60 @@ public class SlimpleTextClientActivity extends Activity {
 	private EditText room = null;
 	
 	int counter = 3;
+	
+	private Handler hand = new Handler()
+    {
+        @Override
+        public void handleMessage(Message msg)
+        {
+            if (msg.what == counter)
+            {
+            	if(received.equals("1")){ //Credentials Incorrect
+					counter--;
+					attempts.setText(Integer.toString(counter));
+					
+					if (counter == 0)
+					{
+						button.setEnabled(false);
+					}
+					
+            		Toast.makeText(getApplicationContext(), "User/Pass incorrect",
+							Toast.LENGTH_SHORT).show();
+					
+				}
+				else if(received.equals("2")){ //Not a Door
+					Toast.makeText(getApplicationContext(), "Door number does not exist",
+							Toast.LENGTH_SHORT).show();
+					
+				}
+				else if(received.equals("3")){ //No Access for User
+					Toast.makeText(getApplicationContext(), "User has no access to this door",
+							Toast.LENGTH_SHORT).show();
+					
+				}
+				else if(received.equals("4")){ //Door Already Open
+					Toast.makeText(getApplicationContext(), "Door is already open",
+							Toast.LENGTH_SHORT).show();
+					
+				}
+				else if(received.equals("5")){ //Door Currently Unavailable
+					Toast.makeText(getApplicationContext(), "Door is currently unavailable",
+							Toast.LENGTH_SHORT).show();
+					
+				}
+				else if(received.equals("6")){ //User Already Logged In
+					Toast.makeText(getApplicationContext(), "User is already logged in",
+							Toast.LENGTH_SHORT).show();
+					
+				}
+				else{
+					Toast.makeText(getApplicationContext(), "ERRCode Failed",
+							Toast.LENGTH_SHORT).show();
+					
+				}
+            }
+        }
+    };
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -63,9 +119,9 @@ public class SlimpleTextClientActivity extends Activity {
 				userMessage = Username.getText().toString() + '\n'; // get the text in username
 				passMessage = Password.getText().toString() + '\n'; // get the text in password
 				roomMessage = room.getText().toString() + '\n';
-				Username.setText(""); // Reset Username field
-				Password.setText(""); // Reset Password field
-				room.setText (""); // reset the room
+				//Username.setText(""); // Reset Username field
+				//Password.setText(""); // Reset Password field
+				//room.setText (""); // reset the room
 				SendMessage sendMessageTask = new SendMessage();
 				sendMessageTask.execute();
 				
@@ -107,19 +163,9 @@ public class SlimpleTextClientActivity extends Activity {
 					   //intent.putExtra("clientsend");
 			           startActivity(intent);
 			    }
-				else if(received.equals("1")){ //Credentials Incorrect
-					
-				}
 			    else{
-			     //Toast.makeText(getApplicationContext(), "Wrong Credentials",
-			     //           Toast.LENGTH_SHORT).show();
-			        /*attempts.setBackgroundColor(Color.RED);
-			        counter--;
-			        attempts.setText(Integer.toString(counter));
-			        if(counter==0){
-			            button.setEnabled(false);
-			        }*/
-			        startActivity(new Intent (SlimpleTextClientActivity.this, SlimpleTextClientActivity.class));
+			    	Message ERRMessage = hand.obtainMessage(counter);
+			    	hand.sendMessage(ERRMessage);
 			    }
 				
 				//client.close(); // closing the connection
